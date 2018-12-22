@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html ng-app="myApp" ng-controller="myCtrl">
+
+	<head>
+		<meta charset="utf-8" />
+		<title>Api接口测试</title>
+		<link rel="stylesheet" href="css/bootstrap.min.css">
+		<script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+		<script type="text/javascript" src="js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="js/angular.min.js"></script>
+		<script type="text/javascript" src="js/app.js"></script>
+	</head>
+
+	<body>
+		<div class="container" style="margin-top: 50px;">
+			<div class="panel panel-primary">
+				<div class="panel-heading">API接口测试</div>
+				<div class="panel-body">
+					<div class="row">
+						<!--
+                        	作者：qiqin518@163.com
+                        	时间：2018-12-21
+                        	描述：左侧请求列表
+                        -->
+						<div class="col-md-3">
+							<div class="panel panel-default">
+								<div class="panel-heading">历史记录</div>
+								<div class="panel-body" style="padding: 5px;">
+									<div style="margin-bottom: 5px;">
+										<div class="btn-group btn-group-sm" role="group">
+											<button type="button" class="btn btn-default" data-toggle="modal" data-target="#delDialog" 
+												title="清空所有记录"
+												ng-disabled="storage.urlList.length == 0"
+												ng-click="storage.delType=2">清空所有</button>
+											<button type="button" class="btn btn-default" data-toggle="modal" data-target="#delDialog" 
+												title="删除选中记录"
+												ng-disabled="!storage.curSelected"
+												ng-click="storage.delType=1">删除选中</button>
+										</div>
+									</div>
+									<div class="list-group" style="height: 400px; overflow: auto;">
+										<a href="#" class="list-group-item" title="{{item.url}}" 
+											ng-repeat="item in storage.urlList" 
+											ng-class="{'active': item.selected}" 
+											ng-click="storage.onSelect(item)">
+											<h5 class="list-group-item-heading">
+										    	<span class="label label-info">{{item.method}}</span>
+										    	<span>{{item.time | date:'yyyy-MM-dd HH:mm:ss'}}</span>
+										    </h5>
+											<p class="list-group-item-text" style="word-break:break-all">{{item.url}}</p>
+										</a>
+										<p class="text-muted text-center" ng-show="storage.urlList.length == 0">暂无历史记录</p>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!--
+                        	作者：qiqin518@163.com
+                        	时间：2018-12-21
+                        	描述：右侧主体内容
+                        -->
+						<div class="col-md-9">
+							<div class="row">
+								<div class="col-md-2">
+									<select class="form-control" ng-model="form.method">
+										<option value="GET">GET</option>
+										<option value="POST">POST</option>
+										<option value="PUT">PUT</option>
+										<option value="DELETE">DELETE</option>
+									</select>
+								</div>
+								<div class="col-md-9">
+									<div class="input-group">
+										<input type="text" class="form-control" placeholder="请输入URL" ng-model="form.url">
+										<span class="input-group-btn">
+									        <button class="btn btn-primary" type="button" 
+									        	data-toggle="modal" data-target="#myModal"
+									        	ng-disabled="!form.url"
+									        	ng-click="form.onSend()">发送</button>
+									      </span>
+									</div>
+								</div>
+								<div class="col-md-1" style="padding: 0;">
+									<button class="btn btn-default" type="button" ng-click="form.onReset()">重置</button>
+								</div>
+							</div>
+
+							<div class="row" style="margin-top: 20px;">
+								<ul class="nav nav-tabs" role="tablist" style="margin-left: 10px;">
+									<li role="presentation" class="active">
+										<a href="#Params" aria-controls="Params" role="tab" data-toggle="tab">请求参数</a>
+									</li>
+									<li role="presentation">
+										<a href="#Headers" aria-controls="Headers" role="tab" data-toggle="tab">请求头</a>
+									</li>
+									<li role="presentation">
+										<a href="#Body" aria-controls="Body" role="tab" data-toggle="tab">请求体</a>
+									</li>
+									<li role="presentation">
+										<a href="#Result" aria-controls="Result" role="tab" data-toggle="tab">响应结果</a>
+									</li>
+								</ul>
+
+								<!-- Tab panes -->
+								<div class="tab-content" style="padding: 10px;">
+									<!--
+                                    	作者：qiqin518@163.com
+                                    	时间：2018-12-21
+                                    	描述：参数页签
+                                    -->
+									<div role="tabpanel" class="tab-pane active" id="Params">
+										<table class="table">
+											<tr>
+												<th width="20%">参数名</th>
+												<th>参数值</th>
+												<th width="5%"></th>
+											</tr>
+											<tr ng-repeat="param in form.getParams">
+												<td><input type="text" class="form-control" placeholder="请输入参数名" ng-model="param.key"></td>
+												<td><input type="text" class="form-control" placeholder="请输入参数值" ng-model="param.value"></td>
+												<td><button type="button" class="btn btn-default" ng-disabled="form.getParams.length == 1" ng-click="form.onRemoveGetParam(param)">移除</button></td>
+											</tr>
+										</table>
+										&nbsp;&nbsp;<button class="btn btn-default btn-sm" type="button" ng-click="form.onAddGetParams()">增加参数</button>
+									</div>
+									<!--
+                                    	作者：qiqin518@163.com
+                                    	时间：2018-12-21
+                                    	描述：请求头页签
+                                    -->
+									<div role="tabpanel" class="tab-pane" id="Headers">
+										<table class="table">
+											<tr>
+												<th width="20%">请求头</th>
+												<th>请求头值</th>
+												<th width="5%"></th>
+											</tr>
+											<tr ng-repeat="head in form.headers">
+												<td><input type="text" class="form-control" placeholder="请输入请求头" ng-model="head.key"></td>
+												<td><input type="text" class="form-control" placeholder="请输入请求头值" ng-model="head.value"></td>
+												<td><button type="button" class="btn btn-default" ng-disabled="form.headers.length == 1" ng-click="form.onRemoveHead(head)">移除</button></td>
+											</tr>
+										</table>
+										&nbsp;&nbsp;<button class="btn btn-default btn-sm" type="button" ng-click="form.onAddHeads()">增加请求头</button>
+									</div>
+									<!--
+                                    	作者：qiqin518@163.com
+                                    	时间：2018-12-21
+                                    	描述：请求体页签
+                                    -->
+									<div role="tabpanel" class="tab-pane" id="Body">
+										<label class="radio-inline">
+										  <input type="radio" name="bodyType" value="1" ng-model="form.contentType"> application/x-www-form-urlencoded
+										</label>
+										<label class="radio-inline">
+										  <input type="radio" name="bodyType" value="2" ng-model="form.contentType"> application/json
+										</label>
+
+										<div style="margin: 10px 0px;" ng-show="form.contentType=='2'">
+											<textarea class="form-control" rows="10" ng-model="form.jsonBody"></textarea>
+										</div>
+										<div style="margin: 10px 0px;" ng-show="form.contentType=='1'">
+											<table class="table">
+												<tr>
+													<th width="20%">参数名</th>
+													<th>参数值</th>
+													<th width="5%"></th>
+												</tr>
+												<tr ng-repeat="param in form.formBody">
+													<td><input type="text" class="form-control" placeholder="请输入参数名" ng-model="param.key"></td>
+													<td><input type="text" class="form-control" placeholder="请输入参数值" ng-model="param.value"></td>
+													<td><button type="button" class="btn btn-default" ng-disabled="form.formBody.length == 1" ng-click="form.onRemoveFormBody(param)">移除</button></td>
+												</tr>
+											</table>
+											&nbsp;&nbsp;<button class="btn btn-default btn-sm" type="button" ng-click="form.onAddFormBody()">增加参数</button>
+										</div>
+									</div>
+									<!--
+                                    	作者：qiqin518@163.com
+                                    	时间：2018-12-21
+                                    	描述：返回结果页签
+                                    -->
+									<div role="tabpanel" class="tab-pane" id="Result">
+										<div style="margin: 10px 0px;">
+											<div class="alert alert-danger" role="alert" ng-show="isError">
+												<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+												<strong>请求出错啦!</strong> &nbsp;&nbsp;详情请按F12打开浏览器调试窗口，查看控制台信息。
+											</div>
+											<h5>响应体</h5>
+											<textarea class="form-control" rows="10">{{form.result}}</textarea>
+											<h5>响应头信息</h5>
+											<textarea class="form-control" rows="5" readonly="readonly">{{form.responsHeaders}}</textarea>
+										</div>
+									</div>
+
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 响应结果 -->
+		<div class="modal fade bs-example-modal-lg" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">请求结果</h4>
+					</div>
+					<div class="modal-body">
+						<div class="alert alert-danger" role="alert" ng-show="isError">
+							<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+							<strong>请求出错啦!</strong> &nbsp;&nbsp;详情请按F12打开浏览器调试窗口，查看控制台信息。
+						</div>
+						<h5>响应体</h5>
+						<textarea class="form-control" rows="10">{{form.result}}</textarea>
+						<h5>响应头信息</h5>
+						<textarea class="form-control" rows="5" readonly="readonly">{{form.responsHeaders}}</textarea>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!--
+        	作者：qiqin518@163.com
+        	时间：2018-12-22
+        	描述：删除确认框
+        -->
+		<div id="delDialog" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog">
+			<div class="modal-dialog modal-sm" role="document">
+				<div class="modal-content">
+					<div class="modal-body">
+						<p ng-show="storage.delType == 1">确定要删除选中的历史记录吗？</p>
+						<p ng-show="storage.delType == 2">确定要清空所有的历史记录吗？</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" ng-click="storage.onDelOk()">确定</button>
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		
+	</body>
+
+</html>
